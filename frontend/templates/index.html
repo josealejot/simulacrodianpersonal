@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-50">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PrepDIAN 2676 - Analista IV (OPEC 236799)</title>
+  <meta name="description" content="Plataforma de estudio y simulacro oficial para la Convocatoria DIAN 2676 - Analista IV Nivel Técnico (OPEC 236799) Asistencia al Usuario">
+  
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            dian: {
+              primary: '#064e3b',
+              accent: '#059669',
+              dark: '#022c22'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Estilos Personalizados -->
+  <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body class="h-full flex flex-col text-slate-800 antialiased selection:bg-emerald-500 selection:text-white pb-16 md:pb-0">
+
+  <!-- Header Institucional Superior -->
+  <header class="sticky top-0 z-40 bg-slate-900 border-b border-emerald-900/60 shadow-md backdrop-blur-md bg-opacity-95">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        
+        <!-- Logo & Identidad Convocatoria -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-white shadow-md shadow-emerald-500/20 font-black text-xl tracking-tighter">
+            D
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-black text-white text-base tracking-tight">PrepDIAN 2676</span>
+              <span class="hidden sm:inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                OPEC 236799
+              </span>
+            </div>
+            <span class="text-[11px] text-slate-400 block font-medium">Analista IV • Asistencia al Usuario (3 Vacantes)</span>
+          </div>
+        </div>
+
+        <!-- Navegación Desktop -->
+        <nav class="hidden md:flex items-center gap-1">
+          <a href="#" data-nav="dashboard" class="px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-emerald-700 text-white">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            Inicio
+          </a>
+          <a href="#" data-nav="modules" class="px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 text-slate-200 hover:bg-emerald-800">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+            Módulos
+          </a>
+          <a href="#" data-nav="exam" class="px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 text-slate-200 hover:bg-emerald-800">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Simulacro
+          </a>
+          <a href="#" data-nav="flashcards" class="px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 text-slate-200 hover:bg-emerald-800">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+            Flashcards
+          </a>
+          <a href="#" data-nav="documents" class="px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 text-slate-200 hover:bg-emerald-800">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/></svg>
+            Biblioteca Normativa
+          </a>
+          <a href="#" data-nav="stats" class="px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 text-slate-200 hover:bg-emerald-800">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            Estadísticas
+          </a>
+        </nav>
+
+        <!-- Botón Rápido Simulacro -->
+        <div class="flex items-center gap-2">
+          <button onclick="UI.startExam()" class="px-4 py-2 bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-700 hover:to-rose-800 text-white font-bold text-xs rounded-xl transition shadow-md shadow-rose-600/30 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+            Simulacro Real
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- Contenedor Principal Dinámico (Renderizado por UI.js) -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+    <div id="main-content">
+      <!-- Loading Skeleton Inicial -->
+      <div class="space-y-4 animate-pulse">
+        <div class="h-40 bg-slate-200 rounded-2xl"></div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="h-32 bg-slate-200 rounded-2xl"></div>
+          <div class="h-32 bg-slate-200 rounded-2xl"></div>
+          <div class="h-32 bg-slate-200 rounded-2xl"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer Discreto -->
+  <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <span>PrepDIAN 2676 • Convocatoria CNSC 2024 • OPEC 236799</span>
+      <span class="text-slate-400">Diseñado con FastAPI, Jinja2 y Tailwind CSS</span>
+    </div>
+  </footer>
+
+  <!-- Barra de Navegación Inferior (Móviles) -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-slate-900 border-t border-slate-800 flex items-center justify-around py-2 px-1 text-slate-300">
+    <button data-nav="dashboard" class="flex flex-col items-center gap-1 py-1 px-2 rounded-lg text-[10px] font-semibold text-emerald-400">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      Inicio
+    </button>
+    <button data-nav="modules" class="flex flex-col items-center gap-1 py-1 px-2 rounded-lg text-[10px] font-semibold">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+      Módulos
+    </button>
+    <button data-nav="exam" class="flex flex-col items-center gap-1 py-1 px-2 rounded-lg text-[10px] font-semibold text-rose-400">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      Simulacro
+    </button>
+    <button data-nav="flashcards" class="flex flex-col items-center gap-1 py-1 px-2 rounded-lg text-[10px] font-semibold">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+      Flashcards
+    </button>
+    <button data-nav="documents" class="flex flex-col items-center gap-1 py-1 px-2 rounded-lg text-[10px] font-semibold">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/></svg>
+      Normativa
+    </button>
+    <button data-nav="stats" class="flex flex-col items-center gap-1 py-1 px-2 rounded-lg text-[10px] font-semibold">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      Historial
+    </button>
+  </nav>
+
+  <!-- Módulos JavaScript (Cero lógica mezclada con backend) -->
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/state.js"></script>
+  <script src="/static/js/ui.js"></script>
+</body>
+</html>
