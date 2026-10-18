@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, Depends
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -58,6 +58,11 @@ async def read_root(request: Request):
             "ciudades": ", ".join(settings.CIUDADES_VACANTES)
         }
     )
+
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    favicon_path = os.path.join(STATIC_DIR, "favicon.svg")
+    return FileResponse(favicon_path, media_type="image/svg+xml")
 
 if __name__ == "__main__":
     import uvicorn
