@@ -1,60 +1,157 @@
-/* Estilos personalizados PrepDIAN */
+/* =====================================================================
+   PrepDIAN · sistema visual "carpeta de expediente"
+   Paleta y tipografías se definen en tailwind.config (index.html).
+   ===================================================================== */
 :root {
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --paper: #f1f4f1;
+  --ink: #161a15;
+  --ink-soft: #363e35;
+  --rule: #d4dbd2;
+  --highlight: rgb(252 218 79 / 0.55);
+
+  --font-sans: 'Public Sans', system-ui, sans-serif;
+  --font-display: 'Petrona', Georgia, serif;
+
+  /* Curvas fuertes: las nativas de CSS son demasiado blandas */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 }
+
+html { background: var(--paper); }
 
 body {
   font-family: var(--font-sans);
+  color: var(--ink);
+  background-color: var(--paper);
+  /* Trama de puntos muy sutil: rompe el plano "de plantilla" sin distraer */
+  background-image:
+    radial-gradient(rgb(22 26 21 / 0.035) 1px, transparent 1px);
+  background-size: 18px 18px;
   -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* Efecto Flip para Flashcards */
-.perspective-1000 {
-  perspective: 1000px;
+::selection { background: var(--highlight); color: var(--ink); }
+
+/* ---------- Tipografía editorial ---------- */
+#main-content h1,
+#main-content h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+#main-content h1 { line-height: 1.1; }
+
+/* Números tabulares en marcadores, temporizador y estadísticas */
+.font-mono, #exam-timer, .tabular { font-variant-numeric: tabular-nums; }
+
+/* ---------- Panel de tinta (reemplaza los degradados genéricos) ---------- */
+.panel-ink {
+  position: relative;
+  background-color: var(--ink);
+  background-image: radial-gradient(rgb(255 255 255 / 0.05) 1px, transparent 1px);
+  background-size: 16px 16px;
+  color: #f1f4f1;
+  border-radius: 14px;
+  overflow: hidden;
+}
+.panel-ink::before {
+  /* Filete de resaltador en el borde superior: firma visual de la app */
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: #fcda4f;
+}
+.panel-ink.is-pass::before { background: #84b39a; }
+.panel-ink.is-fail::before { background: #d5694b; }
+
+/* ---------- Resaltador en el temario ---------- */
+.hl {
+  background-image: linear-gradient(transparent 58%, var(--highlight) 58%, var(--highlight) 92%, transparent 92%);
+  padding: 0 0.1em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 
-.transform-style-3d {
-  transform-style: preserve-3d;
+/* Etiqueta de folio (número de eje / módulo) */
+.folio {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
 }
 
-.backface-hidden {
-  backface-visibility: hidden;
+/* ---------- Movimiento ---------- */
+/* Feedback al presionar: la interfaz "escucha" al usuario */
+button:not(:disabled),
+[onclick] {
+  transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+  transition-duration: 160ms;
+  transition-timing-function: var(--ease-out);
+}
+button:not(:disabled):active { transform: scale(0.97); }
+label[onclick]:active,
+div[onclick]:active { transform: scale(0.99); }
+/* La tarjeta 3D gira; no debe encogerse al tocarla */
+.perspective-1000[onclick]:active { transform: none; }
+
+/* Elevación solo con puntero fino (en táctil el hover se queda pegado) */
+@media (hover: hover) and (pointer: fine) {
+  div[onclick]:hover { border-color: #84b39a; }
 }
 
-.rotate-y-180 {
-  transform: rotateY(180deg);
-}
-
-/* Transiciones suaves */
-.transition-card {
-  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Scrollbar estética */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f5f9;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
-
-/* Animaciones sutiles */
-@keyframes fadeIn {
+/* Entrada de vista: corta y con ease-out. Solo al cambiar de vista. */
+@keyframes viewIn {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
+.animate-fade-in { animation: viewIn 240ms var(--ease-out) both; }
 
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out forwards;
+/* Escalonado discreto de tarjetas en grillas (decorativo, nunca bloquea) */
+.animate-fade-in .grid > * { animation: viewIn 260ms var(--ease-out) both; }
+.animate-fade-in .grid > *:nth-child(2) { animation-delay: 35ms; }
+.animate-fade-in .grid > *:nth-child(3) { animation-delay: 70ms; }
+.animate-fade-in .grid > *:nth-child(4) { animation-delay: 105ms; }
+.animate-fade-in .grid > *:nth-child(5) { animation-delay: 140ms; }
+.animate-fade-in .grid > *:nth-child(6) { animation-delay: 175ms; }
+.animate-fade-in .grid > *:nth-child(n+7) { animation-delay: 200ms; }
+
+/* Re-render dentro de la misma vista (p. ej. responder con el teclado):
+   sin animación. Las acciones repetidas no deben sentirse lentas. */
+.no-enter .animate-fade-in,
+.no-enter .animate-fade-in .grid > * { animation: none; }
+
+/* Flashcards */
+.perspective-1000 { perspective: 1200px; }
+.transform-style-3d { transform-style: preserve-3d; }
+.backface-hidden { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.rotate-y-180 { transform: rotateY(180deg); }
+.transition-card { transition: transform 450ms var(--ease-in-out); }
+
+/* Barras de progreso: transform en vez de width (sin layout) */
+.bar-fill { transform-origin: left; transition: transform 500ms var(--ease-out); }
+
+/* Foco visible y coherente para teclado */
+:focus-visible {
+  outline: 2px solid #256548;
+  outline-offset: 2px;
+  border-radius: 6px;
 }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--paper); }
+::-webkit-scrollbar-thumb { background: #b8c2b4; border-radius: 8px; border: 2px solid var(--paper); }
+::-webkit-scrollbar-thumb:hover { background: #8a9587; }
+
+/* Movimiento reducido: menos y más suave, no cero */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-fade-in .grid > * { animation: fadeOnly 160ms ease both; animation-delay: 0ms !important; }
+  button:not(:disabled):active,
+  label[onclick]:active,
+  div[onclick]:active { transform: none; }
+  .transition-card { transition-duration: 1ms; }
+  .bar-fill { transition: none; }
+}
+@keyframes fadeOnly { from { opacity: 0; } to { opacity: 1; } }

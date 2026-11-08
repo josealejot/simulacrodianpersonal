@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "frontend/static/css/styles.css"
+        ],
+        "createdAt": "2026-11-08T01:44:34.018Z",
+        "reason": "assistant design decision: .panel-ink::before is a 3px TOP highlighter rule (signature), not a side-tab card border"
+      }
+    ]
+  }
+}

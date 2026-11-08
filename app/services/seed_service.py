@@ -17,14 +17,14 @@ class SeedService:
                 "title": "Decreto 1625 de 2016 - Único Reglamentario en Materia Tributaria",
                 "category": "Tributario",
                 "description": "Decreto Único Reglamentario del sector tributario en Colombia. Contiene la reglamentación integral del Registro Único Tributario - RUT (Arts. 1.6.1.2.1 al 1.6.1.2.29), sujetos obligados, formalización, actualización en plazo perentorio de 1 mes, causales de suspensión y cancelación definitiva.",
-                "external_url": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=82582",
+                "external_url": "https://normograma.dian.gov.co/dian/compilacion/docs/decreto_1625_2016.htm",
                 "file_type": "Portal Web oficial"
             },
             {
                 "title": "Ley 1437 de 2011 - Código de Procedimiento Administrativo y de lo Contencioso Administrativo (CPACA)",
                 "category": "Procedimiento Administrativo",
                 "description": "Marco legal rector de la actuación administrativa estatal. Regula los principios fundamentales (Título I), el derecho de petición (Título II), régimen de notificaciones (personal, electrónica, por aviso) y los recursos de reposición, apelación y queja en término de 10 días (Título III).",
-                "external_url": "https://www.secretariasenado.gov.co/senado/basedoc/ley_1437_2011.html",
+                "external_url": "https://normograma.dian.gov.co/dian/compilacion/docs/ley_1437_2011.htm",
                 "file_type": "Portal Web oficial"
             },
             {
@@ -35,10 +35,10 @@ class SeedService:
                 "file_type": "Portal Web oficial"
             },
             {
-                "title": "Estatuto Tributario Nacional - Artículos 555-2 y 583",
+                "title": "Estatuto Tributario Nacional (Decreto 624 de 1989) - Arts. 555-2 y 583",
                 "category": "Tributario",
                 "description": "Norma tributaria superior en Colombia. El Art. 555-2 consagra la obligación y administración del RUT, y el Art. 583 instituye la reserva tributaria estricta que ampara la confidencialidad de las declaraciones de renta e información privada de los contribuyentes.",
-                "external_url": "https://estatuto.co/",
+                "external_url": "https://normograma.dian.gov.co/dian/compilacion/docs/estatuto_tributario.htm",
                 "file_type": "Portal Web oficial"
             },
             {
@@ -52,8 +52,8 @@ class SeedService:
                 "title": "Ley 594 de 2000 - Ley General de Archivos y Gestión Documental",
                 "category": "Gestión Documental",
                 "description": "Regula la gestión documental en las entidades del Estado. Define el ciclo vital del documento (archivo de gestión, archivo central y archivo histórico), los principios archivísticos y la obligatoriedad de las Tablas de Retención Documental (TRD).",
-                "external_url": "https://www.archivogeneral.gov.co/transparencia/marco-legal/ley-594-de-2000",
-                "file_type": "PDF / Web oficial"
+                "external_url": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=4275",
+                "file_type": "Portal Web oficial"
             },
             {
                 "title": "Guía de Orientación al Aspirante CNSC - Convocatoria DIAN 2676",

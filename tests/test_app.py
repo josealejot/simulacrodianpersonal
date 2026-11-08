@@ -176,6 +176,17 @@ class PrepDIANTests(unittest.TestCase):
         finally:
             db.close()
 
+    def test_biblioteca_sin_dominios_rotos(self):
+        """Dominios verificados como rotos o inaccesibles (404 / timeout)."""
+        rotos = ["secretariasenado.gov.co", "archivogeneral.gov.co/transparencia",
+                 "estatuto.co", "norma.php?i=82582"]
+        docs = self.client.get("/api/documents").json()
+        self.assertGreaterEqual(len(docs), 16)
+        for d in docs:
+            self.assertTrue(d["external_url"].startswith("https://"), d["title"])
+            for r in rotos:
+                self.assertNotIn(r, d["external_url"], d["title"])
+
     def test_bd_real_no_fue_tocada_por_las_pruebas(self):
         self.assertTrue(os.environ["PREPDIAN_DB_PATH"].startswith(_TMP_DIR))
 

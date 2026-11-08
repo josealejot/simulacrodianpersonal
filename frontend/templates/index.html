@@ -11,23 +11,60 @@
   <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  
+  <link href="https://fonts.googleapis.com/css2?family=Petrona:ital,wght@0,400..800;1,400..700&family=Public+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
+    // Sistema visual "carpeta de expediente": se remapean las paletas que usa la UI
+    // (slate → tinta/gris verdoso de expediente, emerald → verde tinta, rose → rojo sello)
+    // para cambiar la identidad sin reescribir el marcado.
     tailwind.config = {
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Inter', 'sans-serif'],
+            sans: ['"Public Sans"', 'system-ui', 'sans-serif'],
+            display: ['Petrona', 'Georgia', 'serif'],
+            mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
           },
           colors: {
-            dian: {
-              primary: '#064e3b',
-              accent: '#059669',
-              dark: '#022c22'
-            }
+            slate: {
+              50: '#f1f4f1', 100: '#e6ebe5', 200: '#d4dbd2', 300: '#b8c2b4', 400: '#8a9587',
+              500: '#646e61', 600: '#4a5348', 700: '#363e35', 800: '#232922', 900: '#161a15', 950: '#0d100c'
+            },
+            emerald: {
+              50: '#eef4f0', 100: '#d7e7dd', 200: '#b2d0bf', 300: '#84b39a', 400: '#579476',
+              500: '#36785a', 600: '#256548', 700: '#1c533b', 800: '#174431', 900: '#123628', 950: '#0a2018'
+            },
+            teal: {
+              50: '#eef4f0', 100: '#d7e7dd', 200: '#b2d0bf', 300: '#84b39a', 400: '#579476',
+              500: '#36785a', 600: '#256548', 700: '#1c533b', 800: '#174431', 900: '#123628', 950: '#0a2018'
+            },
+            rose: {
+              50: '#fcf1ec', 100: '#f8dfd5', 200: '#f0bda9', 300: '#e4927a', 400: '#d5694b',
+              500: '#c24e2f', 600: '#a83f23', 700: '#8b331d', 800: '#712b1a', 900: '#5d2618', 950: '#33110a'
+            },
+            amber: {
+              50: '#fffbe8', 100: '#fff4c2', 200: '#ffe98a', 300: '#fcda4f', 400: '#f5c722',
+              500: '#dcab0c', 600: '#b48607', 700: '#8a640b', 800: '#704f10', 900: '#5e4212', 950: '#352306'
+            },
+            indigo: {
+              50: '#eef0f4', 100: '#dce0e9', 200: '#b9c1d3', 300: '#8f9bb6', 400: '#6a7898',
+              500: '#4f5d7e', 600: '#3e4a68', 700: '#323c55', 800: '#283045', 900: '#1f2536', 950: '#121621'
+            },
+            sky: {
+              50: '#eef3f6', 100: '#d9e5ec', 200: '#b5cbd8', 300: '#88aabe', 400: '#5f88a2',
+              500: '#476f89', 600: '#385a71', 700: '#2e4a5d', 800: '#273d4c', 900: '#21323f', 950: '#141f28'
+            },
+            dian: { primary: '#1c533b', accent: '#256548', dark: '#123628' }
+          },
+          borderRadius: { xl: '10px', '2xl': '14px', '3xl': '18px' },
+          boxShadow: {
+            sm: '0 1px 0 rgb(22 26 21 / 0.04)',
+            DEFAULT: '0 1px 2px rgb(22 26 21 / 0.06)',
+            md: '0 1px 2px rgb(22 26 21 / 0.05), 0 2px 6px -2px rgb(22 26 21 / 0.06)',
+            lg: '0 2px 4px rgb(22 26 21 / 0.05), 0 8px 20px -8px rgb(22 26 21 / 0.12)',
+            xl: '0 4px 8px rgb(22 26 21 / 0.06), 0 16px 32px -16px rgb(22 26 21 / 0.18)',
           }
         }
       }
@@ -35,7 +72,7 @@
   </script>
 
   <!-- Estilos Personalizados -->
-  <link rel="stylesheet" href="/static/css/styles.css">
+  <link rel="stylesheet" href="/static/css/styles.css?v=3">
 </head>
 <body class="h-full flex flex-col text-slate-800 antialiased selection:bg-emerald-500 selection:text-white pb-16 md:pb-0">
 
@@ -46,12 +83,10 @@
         
         <!-- Logo & Identidad Convocatoria -->
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-white shadow-md shadow-emerald-500/20 font-black text-xl tracking-tighter">
-            D
-          </div>
           <div>
             <div class="flex items-center gap-2">
-              <span class="font-black text-white text-base tracking-tight">PrepDIAN 2676</span>
+              <span class="font-display text-[22px] leading-none text-white tracking-tight">Prep<em class="text-amber-300">DIAN</em></span>
+              <span class="font-mono text-[11px] text-slate-400 pt-1">2676</span>
               <span class="hidden xl:inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                 OPEC 236799
               </span>
@@ -94,8 +129,7 @@
 
         <!-- Botón Rápido Simulacro -->
         <div class="flex items-center gap-2">
-          <button onclick="UI.startExam()" class="px-4 py-2 bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-700 hover:to-rose-800 text-white font-bold text-xs rounded-xl transition shadow-md shadow-rose-600/30 flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+          <button onclick="UI.startExam()" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl transition flex items-center gap-1.5 whitespace-nowrap">
             Simulacro Real
           </button>
         </div>
@@ -160,8 +194,8 @@
   </nav>
 
   <!-- Módulos JavaScript (Cero lógica mezclada con backend) -->
-  <script src="/static/js/api.js"></script>
-  <script src="/static/js/state.js"></script>
-  <script src="/static/js/ui.js"></script>
+  <script src="/static/js/api.js?v=3"></script>
+  <script src="/static/js/state.js?v=3"></script>
+  <script src="/static/js/ui.js?v=3"></script>
 </body>
 </html>

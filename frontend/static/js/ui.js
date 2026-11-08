@@ -64,7 +64,7 @@ const UI = {
   mdInline(s) {
     return this.esc(s)
       .replace(/`([^`]+)`/g, '<code class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-800 font-mono text-[0.85em]">$1</code>')
-      .replace(/\*\*([^*]+)\*\*/g, '<strong class="font-semibold text-slate-900">$1</strong>')
+      .replace(/\*\*([^*]+)\*\*/g, '<strong class="hl font-semibold text-slate-900">$1</strong>')
       .replace(/(^|[^*])\*([^*\s][^*]*)\*/g, '$1<em>$2</em>');
   },
 
@@ -147,6 +147,16 @@ const UI = {
     const container = document.getElementById('main-content');
     if (!container) return;
 
+    // Animar la entrada solo cuando cambia la pantalla, no en cada re-render
+    // (seleccionar una opción o navegar con el teclado debe ser instantáneo).
+    const viewKey = [
+      AppState.activeView,
+      AppState.exam.inProgress,
+      AppState.selectedModule && AppState.selectedModule.id
+    ].join('|');
+    container.classList.toggle('no-enter', viewKey === this._lastViewKey);
+    this._lastViewKey = viewKey;
+
     // Actualizar nav activa
     document.querySelectorAll('[data-nav]').forEach(el => {
       const v = el.getAttribute('data-nav');
@@ -203,10 +213,10 @@ const UI = {
     container.innerHTML = `
       <div class="space-y-6 animate-fade-in">
         <!-- Banner Oficial Convocatoria -->
-        <div class="bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 text-white rounded-2xl p-6 md:p-8 shadow-xl border border-emerald-800/40 relative overflow-hidden">
+        <div class="panel-ink p-6 md:p-8">
           <div class="relative z-10 max-w-4xl">
             <div class="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/20 text-emerald-300 rounded-full text-xs font-semibold uppercase tracking-wider mb-3 border border-emerald-500/30">
-              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
               Convocatoria Oficial DIAN 2676 de 2024
             </div>
             <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight mb-2">
@@ -245,9 +255,9 @@ const UI = {
         </div>
 
         <!-- Ruta de estudio por Ejes OPEC -->
-        <div onclick="UI.navigateTo('ejes')" class="cursor-pointer bg-gradient-to-r from-amber-50 to-emerald-50 rounded-2xl p-5 md:p-6 border-2 border-amber-300 hover:border-emerald-500 shadow-sm hover:shadow-md transition flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div onclick="UI.navigateTo('ejes')" class="cursor-pointer bg-white rounded-2xl p-5 md:p-6 border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div class="flex items-start gap-4">
-            <div class="w-12 h-12 shrink-0 rounded-xl bg-amber-400 text-amber-950 flex items-center justify-center text-2xl">🎯</div>
+            <div class="folio shrink-0 text-5xl leading-none text-emerald-700 w-14 text-center"><span class="hl not-italic">14</span></div>
             <div>
               <h2 class="text-lg font-black text-slate-900">Ruta de estudio por los 14 Ejes de tu OPEC</h2>
               <p class="text-xs md:text-sm text-slate-600">Qué estudiar según la ficha CC-AU-2010, lo que no puede faltar por eje, práctica dirigida y logística del día de la prueba.</p>
@@ -307,7 +317,7 @@ const UI = {
                 Memoriza plazos de Ley 1755, suspensiones de RUT y recursos con tarjetas 3D.
               </p>
             </div>
-            <button onclick="AppState.setView('flashcards')" class="w-full py-2.5 px-4 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-xl transition text-center shadow-md shadow-amber-600/20 text-xs md:text-sm">
+            <button onclick="AppState.setView('flashcards')" class="w-full py-2.5 px-4 bg-amber-300 hover:bg-amber-400 text-amber-950 font-semibold rounded-xl transition text-center text-xs md:text-sm">
               Estudiar Tarjetas
             </button>
           </div>
@@ -407,9 +417,9 @@ const UI = {
 
               <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
                 <div class="flex items-center gap-3 text-xs text-slate-500">
-                  <span>📚 ${m.topics_count} temas</span>
-                  <span>✍️ ${m.questions_count} preguntas</span>
-                  <span>💡 ${m.flashcards_count} flashcards</span>
+                  <span><b class="font-mono text-slate-700">${m.topics_count}</b> temas</span>
+                  <span><b class="font-mono text-slate-700">${m.questions_count}</b> preguntas</span>
+                  <span><b class="font-mono text-slate-700">${m.flashcards_count}</b> flashcards</span>
                 </div>
                 <button onclick="UI.openModule(${m.id})" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg transition shadow-sm">
                   Abrir Módulo →
@@ -462,10 +472,10 @@ const UI = {
           <!-- Pestañas internas de estudio -->
           <div class="border-b border-slate-200 flex gap-4 mb-6">
             <button id="tab-theory-btn" onclick="UI.switchStudyTab('theory')" class="pb-3 border-b-2 border-emerald-700 font-bold text-sm text-emerald-800">
-              📖 Temario Teórico (${m.topics.length})
+              Temario (${m.topics.length})
             </button>
             <button id="tab-practice-btn" onclick="UI.switchStudyTab('practice')" class="pb-3 border-b-2 border-transparent font-semibold text-sm text-slate-500 hover:text-slate-800">
-              ✍️ Preguntas de Práctica (${AppState.moduleQuestions.length})
+              Práctica (${AppState.moduleQuestions.length})
             </button>
           </div>
 
@@ -976,8 +986,8 @@ const UI = {
     container.innerHTML = `
       <div class="space-y-6 animate-fade-in">
         <!-- Veredicto Principal -->
-        <div class="rounded-2xl p-6 md:p-8 text-white shadow-xl ${
-          passed ? 'bg-gradient-to-r from-emerald-900 to-teal-950 border border-emerald-700/60' : 'bg-gradient-to-r from-rose-950 via-slate-900 to-rose-950 border border-rose-800/60'
+        <div class="p-6 md:p-8 ${
+          passed ? 'panel-ink is-pass' : 'panel-ink is-fail'
         }">
           <div class="max-w-3xl">
             <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-3 ${
@@ -1143,7 +1153,7 @@ const UI = {
             <option value="all" ${fc.selectedModuleId === 'all' ? 'selected' : ''}>Todos los módulos</option>
             ${AppState.modules.map(m => `<option value="${m.id}" ${String(fc.selectedModuleId) === String(m.id) ? 'selected' : ''}>Módulo ${m.number} · ${this.esc(m.title)} (${m.flashcards_count})</option>`).join('')}
           </select>
-          <button onclick="UI.shuffleFlashcards()" class="px-4 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50">🔀 Barajar</button>
+          <button onclick="UI.shuffleFlashcards()" class="px-4 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50">Barajar</button>
         </div>
 
         ${!currentCard ? `
@@ -1311,7 +1321,7 @@ const UI = {
     container.innerHTML = `
       <div class="space-y-6 animate-fade-in">
         <!-- Encabezado + cuenta regresiva -->
-        <div class="bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 text-white rounded-2xl p-6 md:p-8 shadow-xl border border-emerald-800/40">
+        <div class="panel-ink p-6 md:p-8">
           <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
               <div class="text-xs font-semibold uppercase tracking-wider text-emerald-300 mb-2">Ficha CC-AU-2010 · OPEC 236799</div>
@@ -1328,7 +1338,7 @@ const UI = {
               <span>Tu repaso: ${done} de ${total} ejes marcados como estudiados</span><span>${pct}%</span>
             </div>
             <div class="w-full h-2.5 bg-white/10 rounded-full overflow-hidden">
-              <div class="h-2.5 bg-gradient-to-r from-emerald-400 to-teal-300 rounded-full transition-all" style="width:${pct}%"></div>
+              <div class="bar-fill h-2.5 bg-amber-300 rounded-full" style="transform:scaleX(${pct/100})"></div>
             </div>
           </div>
         </div>
@@ -1336,7 +1346,7 @@ const UI = {
         <!-- Logística del día -->
         <details class="bg-white rounded-2xl p-5 shadow-sm border border-amber-200 group" ${done === 0 ? 'open' : ''}>
           <summary class="cursor-pointer font-bold text-slate-900 text-sm flex items-center justify-between">
-            <span>📋 Lo que dice la Guía de Orientación (léelo hoy)</span>
+            <span class="font-display text-base">Lo que dice la Guía de Orientación <span class="text-slate-500 font-sans text-xs">· léelo hoy</span></span>
             <span class="text-xs text-slate-400 group-open:hidden">ver</span>
           </summary>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 text-xs md:text-sm text-slate-700">
@@ -1361,7 +1371,7 @@ const UI = {
                 <div class="bg-white rounded-2xl p-5 shadow-sm border ${isDone ? 'border-emerald-400 ring-1 ring-emerald-200' : 'border-slate-200'} flex flex-col">
                   <div class="flex items-start justify-between gap-3 mb-3">
                     <div class="flex items-start gap-3">
-                      <span class="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center font-black text-sm border ${groupStyle[g] || 'bg-slate-100 text-slate-700 border-slate-200'}">${e.numero}</span>
+                      <span class="folio shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-lg border ${groupStyle[g] || 'bg-slate-100 text-slate-700 border-slate-200'}">${e.numero}</span>
                       <h3 class="font-bold text-slate-900 text-sm md:text-base leading-snug">${this.esc(e.titulo)}</h3>
                     </div>
                     <label class="shrink-0 flex items-center gap-1.5 text-[11px] font-semibold cursor-pointer select-none ${isDone ? 'text-emerald-700' : 'text-slate-400'}">
@@ -1374,9 +1384,9 @@ const UI = {
                   </ul>
                   <div class="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-100">
                     ${e.modulos.map(m => `
-                      <button onclick="UI.openModule(${m.id})" class="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-[11px] font-bold border border-emerald-200">📖 M${m.number} · ${this.esc(m.title.length > 30 ? m.title.slice(0, 28) + '…' : m.title)}</button>
+                      <button onclick="UI.openModule(${m.id})" class="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-[11px] font-bold border border-emerald-200">M${m.number} · ${this.esc(m.title.length > 30 ? m.title.slice(0, 28) + '…' : m.title)}</button>
                     `).join('')}
-                    <button onclick='UI.practiceEje(${modIds}, ${JSON.stringify('Práctica · Eje ' + e.numero).replace(/'/g, '&#39;')})' class="ml-auto px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold">✍️ Practicar (${e.questions_count})</button>
+                    <button onclick='UI.practiceEje(${modIds}, ${JSON.stringify('Práctica · Eje ' + e.numero).replace(/'/g, '&#39;')})' class="ml-auto px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold">Practicar · ${e.questions_count}</button>
                   </div>
                 </div>`;
               }).join('')}

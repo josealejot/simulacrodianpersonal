@@ -13,7 +13,7 @@ complementa. Cambiar CONTENT_VERSION fuerza la re-siembra del contenido de estud
 from sqlalchemy.orm import Session
 from app.models.models import Module, Topic, Question, Option, Flashcard, DocumentResource
 
-CONTENT_VERSION = "2026.11.07-ejes-opec-v1"
+CONTENT_VERSION = "2026.11.07-ejes-opec-v2-links"
 
 # =============================================================================
 # EJES TEMÁTICOS OFICIALES (ficha CC-AU-2010) → módulos de estudio de la app
@@ -1572,28 +1572,34 @@ EXTRA_FLASHCARDS = [
 EXTRA_DOCUMENTS = [
     ("Constitución Política de Colombia de 1991", "Constitución",
      "Texto vigente de la Carta Política. Para el eje 12: Arts. 1-10 (principios), 11-41 (derechos fundamentales), 86-88 (acciones), 113-131 (estructura y servidores), 209, 338 y 363.",
-     "https://www.secretariasenado.gov.co/senado/basedoc/constitucion_politica_1991.html", "Portal Web oficial"),
+     "https://normograma.dian.gov.co/dian/compilacion/docs/constitucion_politica_1991.htm", "Portal Web oficial"),
     ("Normograma DIAN", "Tributario",
      "Compilación oficial de normas, doctrina y jurisprudencia de la DIAN: Estatuto Tributario actualizado, DUR 1625 de 2016, Decreto 1165 de 2019 y resoluciones.",
      "https://normograma.dian.gov.co/dian/", "Portal Web oficial"),
     ("Ley 1474 de 2011 — Estatuto Anticorrupción", "Integridad",
      "Medidas para prevenir y sancionar la corrupción. Art. 73 (Plan Anticorrupción y de Atención al Ciudadano) y Art. 76 (oficina de quejas, sugerencias y reclamos).",
-     "https://www.secretariasenado.gov.co/senado/basedoc/ley_1474_2011.html", "Portal Web oficial"),
+     "https://normograma.dian.gov.co/dian/compilacion/docs/ley_1474_2011.htm", "Portal Web oficial"),
     ("Ley 1952 de 2019 — Código General Disciplinario", "Integridad",
      "Faltas disciplinarias (gravísimas, graves y leves), sanciones, deberes y prohibiciones de los servidores públicos.",
-     "https://www.secretariasenado.gov.co/senado/basedoc/ley_1952_2019.html", "Portal Web oficial"),
+     "https://normograma.dian.gov.co/dian/compilacion/docs/ley_1952_2019.htm", "Portal Web oficial"),
     ("Ley 2016 de 2020 — Código de Integridad del Servicio Público", "Integridad",
      "Adopta con carácter obligatorio el Código de Integridad: Honestidad, Respeto, Compromiso, Diligencia y Justicia.",
-     "https://www.secretariasenado.gov.co/senado/basedoc/ley_2016_2020.html", "Portal Web oficial"),
+     "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=107254", "Portal Web oficial"),
     ("Ley 1581 de 2012 — Protección de Datos Personales", "Transparencia",
      "Régimen general de habeas data: principios, derechos del titular, consultas (10 días) y reclamos (15 días).",
-     "https://www.secretariasenado.gov.co/senado/basedoc/ley_1581_2012.html", "Portal Web oficial"),
+     "https://normograma.dian.gov.co/dian/compilacion/docs/ley_1581_2012.htm", "Portal Web oficial"),
     ("Ley 1273 de 2009 — Delitos Informáticos", "Herramientas Informáticas",
      "Protección de la información y de los datos: acceso abusivo, violación de datos personales y suplantación de sitios web.",
-     "https://www.secretariasenado.gov.co/senado/basedoc/ley_1273_2009.html", "Portal Web oficial"),
+     "https://normograma.dian.gov.co/dian/compilacion/docs/ley_1273_2009.htm", "Portal Web oficial"),
     ("Modelo Integrado de Planeación y Gestión — MIPG (Función Pública)", "MIPG",
      "Portal oficial del MIPG con el Manual Operativo, las dimensiones, las políticas y el esquema de líneas de defensa.",
      "https://www.funcionpublica.gov.co/web/mipg", "Portal Web oficial"),
+    ("Decreto 1499 de 2017 — Modelo Integrado de Planeación y Gestión", "MIPG",
+     "Decreto que actualiza el MIPG (modifica el Decreto 1083 de 2015): dimensiones, políticas de gestión y desempeño, y sistema de control interno.",
+     "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=83433", "Portal Web oficial"),
+    ("Decreto 1165 de 2019 — Régimen de Aduanas", "Tributario",
+     "Régimen aduanero vigente: importación, exportación, tránsito, declarantes y régimen de viajeros.",
+     "https://normograma.dian.gov.co/dian/compilacion/docs/decreto_1165_2019.htm", "Portal Web oficial"),
     ("SIMO — Ficha del empleo y ejes temáticos (CNSC)", "CNSC",
      "Consulta en SIMO la OPEC 236799, tu citación (lugar y hora) y los ejes temáticos de tu empleo.",
      "https://simo.cnsc.gov.co/", "Portal Web oficial"),

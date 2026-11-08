@@ -38,3 +38,6 @@ Thumbs.db
 
 # Copias de seguridad locales de la BD
 *.bak-*
+
+# Caché local del revisor de diseño
+.impeccable/hook.cache.json
