@@ -20,6 +20,15 @@
 
 ---
 
+## 🎯 Novedades v2.0 — Ruta por Ejes Temáticos OPEC
+- **Vista "Ejes OPEC"**: los 14 ejes de la ficha CC-AU-2010 (+ comportamental/integridad), con lo que no puede faltar, módulos enlazados, práctica por eje, progreso marcable y cuenta regresiva a la prueba (8 nov 2026).
+- **12 módulos / 45 temas / 84 preguntas / 82 flashcards** (nuevos: Servicio al Ciudadano, Herramientas Informáticas, Buen Gobierno y Disciplinario, CPACA Títulos I y III, Constitución, Cultura de la Contribución).
+- **Simulacro configurable**: 20/40/60/todas, filtro por módulos, muestreo balanceado y aleatorio, 2 min por pregunta, atajos de teclado (A/B/C, ←/→, M) y "ver solo mis errores".
+- Temario con formato (tablas, títulos, listas) y flashcards con filtro por módulo y barajado.
+- Corrección: el recurso contra liquidaciones oficiales es **reconsideración en 2 meses (Art. 720 E.T.)**, no reposición.
+- El contenido tiene versión (`CONTENT_VERSION`); al subirla se re-siembra el estudio **sin borrar el historial**.
+- Pruebas: `python -m unittest discover -s tests -v` (usan una BD temporal).
+
 ## 🚀 Funcionalidades Principales
 1. **Módulos de Estudio Teóricos (6 Módulos Oficiales):**
    - Módulo 1: Registro Único Tributario (RUT) — Estatuto Tributario Art. 555-2 y DUR 1625/2016.

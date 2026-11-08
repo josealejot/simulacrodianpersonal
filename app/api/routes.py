@@ -1,11 +1,14 @@
-from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException
+import random
+from collections import defaultdict
+from typing import Dict, List, Optional
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.config import settings
 from app.repositories.repository import DIANRepository
 from app.services.scoring_service import ScoringService
 from app.services.seed_service import SeedService
+from app.services.content_opec import EJES_OPEC
 from app.schemas.schemas import (
     ModuleSummary, ModuleDetail, QuestionBase, FlashcardBase,
     ExamSubmission, ExamResult, ConvocatoriaInfo, DocumentResourceBase
@@ -87,10 +90,66 @@ def get_module_practice_questions(module_id: int, db: Session = Depends(get_db))
     questions = DIANRepository.get_questions_by_module(db, module_id)
     return questions
 
+@router.get("/ejes")
+def get_ejes_opec(db: Session = Depends(get_db)):
+    """Ejes temáticos oficiales de la ficha CC-AU-2010 con sus módulos de estudio."""
+    modules = {m.number: m for m in DIANRepository.get_modules(db)}
+    result = []
+    for eje in EJES_OPEC:
+        linked = [modules[n] for n in eje["modulos"] if n in modules]
+        result.append({
+            "numero": eje["numero"],
+            "grupo": eje["grupo"],
+            "titulo": eje["titulo"],
+            "claves": eje["claves"],
+            "modulos": [{"id": m.id, "number": m.number, "title": m.title} for m in linked],
+            "questions_count": sum(len(m.questions) for m in linked),
+            "flashcards_count": sum(len(m.flashcards) for m in linked),
+        })
+    return {
+        "fecha_prueba": settings.FECHA_PRUEBA_ISO,
+        "corte_normativo": settings.CORTE_NORMATIVO,
+        "ejes": result,
+    }
+
+def _balanced_sample(questions, limit: int):
+    """Toma preguntas en rondas por módulo para cubrir todos los ejes de forma pareja."""
+    pools: Dict[int, list] = defaultdict(list)
+    for q in questions:
+        pools[q.module_id].append(q)
+    for pool in pools.values():
+        random.shuffle(pool)
+    module_order = list(pools.keys())
+    random.shuffle(module_order)
+    picked = []
+    while len(picked) < limit and any(pools.values()):
+        for mid in module_order:
+            if pools[mid] and len(picked) < limit:
+                picked.append(pools[mid].pop())
+    random.shuffle(picked)
+    return picked
+
 @router.get("/exam/questions", response_model=List[QuestionBase])
-def get_exam_questions(db: Session = Depends(get_db)):
-    """Devuelve las preguntas del simulacro sin revelar cuál es la respuesta correcta"""
+def get_exam_questions(
+    limit: Optional[int] = Query(None, ge=1, le=500),
+    module_ids: Optional[str] = Query(None, description="IDs de módulo separados por coma"),
+    shuffle: bool = False,
+    db: Session = Depends(get_db),
+):
+    """Devuelve las preguntas del simulacro sin revelar cuál es la respuesta correcta.
+    Sin parámetros conserva el comportamiento original (todas, en orden)."""
     questions = DIANRepository.get_all_questions(db)
+    if module_ids:
+        try:
+            wanted = {int(x) for x in module_ids.split(",") if x.strip()}
+        except ValueError:
+            raise HTTPException(status_code=422, detail="module_ids debe ser una lista de enteros separados por coma")
+        questions = [q for q in questions if q.module_id in wanted]
+    if limit is not None and limit < len(questions):
+        questions = _balanced_sample(questions, limit)
+    elif shuffle:
+        questions = list(questions)
+        random.shuffle(questions)
     result = []
     for q in questions:
         result.append(QuestionBase(
@@ -115,7 +174,7 @@ def get_exam_questions(db: Session = Depends(get_db)):
 @router.post("/exam/submit", response_model=ExamResult)
 def submit_exam(submission: ExamSubmission, db: Session = Depends(get_db)):
     attempt_data, reviews = ScoringService.evaluate_exam(db, submission)
-    attempt_data["details"]["reviews"] = [r.dict() for r in reviews]
+    attempt_data["details"]["reviews"] = [r.model_dump() for r in reviews]
     
     saved_attempt = DIANRepository.save_exam_attempt(db, attempt_data)
     

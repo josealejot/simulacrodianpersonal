@@ -23,7 +23,115 @@ const UI = {
       });
     });
 
+    // Atajos de teclado (simulacro y flashcards)
+    document.addEventListener('keydown', (e) => this.handleKeydown(e));
+
     this.render();
+  },
+
+  handleKeydown(e) {
+    const tag = (e.target && e.target.tagName) || '';
+    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) return;
+    const view = AppState.activeView;
+
+    if (view === 'exam' && AppState.exam.inProgress) {
+      const q = AppState.exam.questions[AppState.exam.currentIndex];
+      const key = e.key.toUpperCase();
+      if (['A', 'B', 'C'].includes(key) && q) {
+        const opt = q.options.find(o => o.letter === key);
+        if (opt) { e.preventDefault(); this.selectExamOption(q.id, opt.id); }
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault(); this.nextExamQuestion();
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault(); this.prevExamQuestion();
+      } else if (key === 'M' && q) {
+        e.preventDefault(); this.toggleFlagQuestion(q.id);
+      }
+    } else if (view === 'flashcards') {
+      if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); this.toggleFlipFlashcard(); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); this.nextFlashcard(); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); this.prevFlashcard(); }
+    }
+  },
+
+  // -------------------------------------------------------------
+  // Utilidades: escape HTML y Markdown ligero para el temario
+  // -------------------------------------------------------------
+  esc(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  },
+
+  mdInline(s) {
+    return this.esc(s)
+      .replace(/`([^`]+)`/g, '<code class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-800 font-mono text-[0.85em]">$1</code>')
+      .replace(/\*\*([^*]+)\*\*/g, '<strong class="font-semibold text-slate-900">$1</strong>')
+      .replace(/(^|[^*])\*([^*\s][^*]*)\*/g, '$1<em>$2</em>');
+  },
+
+  md(text) {
+    const lines = String(text || '').split('\n');
+    const out = [];
+    let i = 0;
+    const isTableRow = l => /^\s*\|.*\|\s*$/.test(l);
+    const cells = l => l.trim().replace(/^\||\|$/g, '').split('|').map(c => c.trim());
+
+    while (i < lines.length) {
+      const line = lines[i];
+      const t = line.trim();
+
+      if (!t) { i++; continue; }
+
+      if (/^-{3,}$/.test(t)) { out.push('<hr class="my-4 border-slate-200">'); i++; continue; }
+
+      let m;
+      if ((m = t.match(/^(#{2,4})\s+(.*)$/))) {
+        const size = m[1].length <= 3 ? 'text-base' : 'text-sm';
+        out.push(`<h3 class="${size} font-bold text-slate-900 mt-5 mb-2">${this.mdInline(m[2])}</h3>`);
+        i++; continue;
+      }
+
+      if (t.startsWith('>')) {
+        const buf = [];
+        while (i < lines.length && lines[i].trim().startsWith('>')) { buf.push(lines[i].trim().replace(/^>\s?/, '')); i++; }
+        out.push(`<div class="my-3 p-3 rounded-lg bg-amber-50 border-l-4 border-amber-400 text-amber-950">${this.mdInline(buf.join(' '))}</div>`);
+        continue;
+      }
+
+      if (isTableRow(line)) {
+        const rows = [];
+        while (i < lines.length && isTableRow(lines[i])) { rows.push(lines[i]); i++; }
+        const body = rows.filter(r => !/^\s*\|[\s:|-]+\|\s*$/.test(r));
+        const [head, ...rest] = body;
+        out.push(`<div class="overflow-x-auto my-3"><table class="w-full text-left text-xs md:text-sm border border-slate-200 rounded-lg overflow-hidden">
+          <thead class="bg-emerald-50 text-emerald-900"><tr>${cells(head).map(c => `<th class="px-3 py-2 font-semibold border-b border-slate-200">${this.mdInline(c)}</th>`).join('')}</tr></thead>
+          <tbody>${rest.map(r => `<tr class="odd:bg-white even:bg-slate-50">${cells(r).map(c => `<td class="px-3 py-2 align-top border-b border-slate-100">${this.mdInline(c)}</td>`).join('')}</tr>`).join('')}</tbody>
+        </table></div>`);
+        continue;
+      }
+
+      if (/^(\s*)([-*]|\d+\.)\s+/.test(line)) {
+        const items = [];
+        const ordered = /^\s*\d+\./.test(line);
+        while (i < lines.length && /^(\s*)([-*]|\d+\.)\s+/.test(lines[i])) {
+          const indent = lines[i].match(/^(\s*)/)[1].length;
+          const content = lines[i].replace(/^\s*([-*]|\d+\.)\s+/, '');
+          items.push(`<li class="${indent >= 2 ? 'ml-5 list-[circle]' : ''}">${this.mdInline(content)}</li>`);
+          i++;
+        }
+        out.push(ordered
+          ? `<ol class="list-decimal pl-5 space-y-1 my-2">${items.join('')}</ol>`
+          : `<ul class="list-disc pl-5 space-y-1 my-2">${items.join('')}</ul>`);
+        continue;
+      }
+
+      const para = [];
+      while (i < lines.length && lines[i].trim() && !/^(#{2,4}\s|>|\s*\||\s*([-*]|\d+\.)\s|-{3,}$)/.test(lines[i].trim())) {
+        para.push(lines[i].trim()); i++;
+      }
+      if (para.length) out.push(`<p class="my-2">${this.mdInline(para.join(' '))}</p>`);
+      else i++;
+    }
+    return out.join('\n');
   },
 
   navigateTo(viewName) {
@@ -76,6 +184,9 @@ const UI = {
         break;
       case 'stats':
         this.renderStats(container);
+        break;
+      case 'ejes':
+        this.renderEjes(container);
         break;
       default:
         this.renderDashboard(container);
@@ -133,6 +244,18 @@ const UI = {
           </div>
         </div>
 
+        <!-- Ruta de estudio por Ejes OPEC -->
+        <div onclick="UI.navigateTo('ejes')" class="cursor-pointer bg-gradient-to-r from-amber-50 to-emerald-50 rounded-2xl p-5 md:p-6 border-2 border-amber-300 hover:border-emerald-500 shadow-sm hover:shadow-md transition flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 shrink-0 rounded-xl bg-amber-400 text-amber-950 flex items-center justify-center text-2xl">🎯</div>
+            <div>
+              <h2 class="text-lg font-black text-slate-900">Ruta de estudio por los 14 Ejes de tu OPEC</h2>
+              <p class="text-xs md:text-sm text-slate-600">Qué estudiar según la ficha CC-AU-2010, lo que no puede faltar por eje, práctica dirigida y logística del día de la prueba.</p>
+            </div>
+          </div>
+          <span class="shrink-0 px-5 py-2.5 bg-slate-900 text-white text-xs md:text-sm font-bold rounded-xl text-center">Abrir ruta de estudio →</span>
+        </div>
+
         <!-- Tarjetas de Acceso Rápido -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           <!-- Card Simulacro -->
@@ -163,7 +286,7 @@ const UI = {
               </div>
               <h2 class="text-lg font-bold text-slate-800 mb-1">Módulos Teóricos</h2>
               <p class="text-slate-600 text-xs md:text-sm mb-4">
-                6 módulos oficiales: RUT, PQRSF, TACI, Canales, MIPG y Competencias.
+                ${modulesCount} módulos con ${AppState.modules.reduce((s, m) => s + m.topics_count, 0)} temas y ${AppState.modules.reduce((s, m) => s + m.questions_count, 0)} preguntas, alineados a los ejes de la OPEC.
               </p>
             </div>
             <button onclick="AppState.setView('modules')" class="w-full py-2.5 px-4 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold rounded-xl transition text-center shadow-md shadow-emerald-700/20 text-xs md:text-sm">
@@ -358,8 +481,8 @@ const UI = {
                     </span>
                   ` : ''}
                 </div>
-                <div class="text-sm text-slate-700 leading-relaxed whitespace-pre-line prose max-w-none">
-                  ${t.content}
+                <div class="text-sm text-slate-700 leading-relaxed max-w-none">
+                  ${UI.md(t.content)}
                 </div>
               </div>
             `).join('')}
@@ -459,9 +582,54 @@ const UI = {
   // -------------------------------------------------------------
   // 4. SIMULACRO REAL CRONOMETRADO (CNSC)
   // -------------------------------------------------------------
-  async startExam() {
+  // Abre la pantalla de configuración del simulacro
+  openExamSetup() {
+    if (AppState.exam.inProgress) { AppState.setView('exam'); return; }
+    AppState.setView('exam');
+  },
+
+  setExamCount(n) {
+    AppState.examConfig.count = n;
+    this.render();
+  },
+
+  toggleExamModule(id) {
+    const ids = AppState.examConfig.moduleIds;
+    const idx = ids.indexOf(id);
+    if (idx >= 0) ids.splice(idx, 1); else ids.push(id);
+    this.render();
+  },
+
+  clearExamModules() {
+    AppState.examConfig.moduleIds = [];
+    this.render();
+  },
+
+  // Practicar un eje concreto: simulacro filtrado por sus módulos
+  practiceEje(moduleIds, label) {
+    this.startExam({ moduleIds, count: 15, label: label || 'Práctica por eje' });
+  },
+
+  repeatLastExam() {
+    this.startExam(AppState.lastExamOpts || {});
+  },
+
+  async startExam(opts = {}) {
+    if (AppState.exam.inProgress) {
+      if (!confirm('Ya tienes un simulacro en curso. ¿Deseas descartarlo y empezar uno nuevo?')) {
+        AppState.setView('exam');
+        return;
+      }
+    }
+    const cfg = AppState.examConfig;
+    const count = opts.count !== undefined ? opts.count : cfg.count;
+    const moduleIds = opts.moduleIds || cfg.moduleIds;
     try {
-      const questions = await API.getExamQuestions();
+      const questions = await API.getExamQuestions({
+        limit: count > 0 ? count : null,
+        moduleIds,
+        shuffle: true
+      });
       if (!questions || questions.length === 0) {
         alert('No hay preguntas disponibles para el simulacro.');
         return;
@@ -470,7 +638,9 @@ const UI = {
       AppState.exam.questions = questions;
       AppState.exam.inProgress = true;
       AppState.exam.currentIndex = 0;
-      AppState.exam.remainingSeconds = 60 * 30; // 30 minutos
+      AppState.exam.label = opts.label || (moduleIds.length ? 'Simulacro por módulos seleccionados' : 'Simulacro general');
+      AppState.lastExamOpts = { count, moduleIds: [...moduleIds], label: AppState.exam.label };
+      AppState.exam.remainingSeconds = Math.max(5 * 60, questions.length * cfg.secondsPerQuestion);
 
       // Iniciar timer
       AppState.exam.timerInterval = setInterval(() => {
@@ -491,13 +661,60 @@ const UI = {
     }
   },
 
+  renderExamSetupOptions() {
+    const cfg = AppState.examConfig;
+    const total = AppState.modules.reduce((s, m) => s + (m.questions_count || 0), 0);
+    const selected = cfg.moduleIds;
+    const pool = selected.length
+      ? AppState.modules.filter(m => selected.includes(m.id)).reduce((s, m) => s + m.questions_count, 0)
+      : total;
+    const effective = cfg.count > 0 ? Math.min(cfg.count, pool) : pool;
+    const minutes = Math.max(5, Math.round(effective * cfg.secondsPerQuestion / 60));
+    const countBtn = (n, label) => `
+      <button onclick="UI.setExamCount(${n})" class="px-3 py-2 rounded-lg text-xs font-bold border transition ${
+        cfg.count === n ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+      }">${label}</button>`;
+
+    return `
+      <div class="text-left space-y-4">
+        <div>
+          <div class="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2">1. Número de preguntas</div>
+          <div class="flex flex-wrap gap-2">
+            ${countBtn(20, '20 · rápido')}
+            ${countBtn(40, '40 · estándar')}
+            ${countBtn(60, '60 · intenso')}
+            ${countBtn(0, `Todas (${pool})`)}
+          </div>
+        </div>
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-slate-900 uppercase tracking-wider">2. Módulos (opcional)</span>
+            ${selected.length ? `<button onclick="UI.clearExamModules()" class="text-xs font-semibold text-emerald-700 hover:underline">Usar todos</button>` : '<span class="text-xs text-slate-500">Todos incluidos</span>'}
+          </div>
+          <div class="flex flex-wrap gap-1.5">
+            ${AppState.modules.map(m => `
+              <button onclick="UI.toggleExamModule(${m.id})" class="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold border transition ${
+                selected.includes(m.id) ? 'bg-emerald-600 text-white border-emerald-700' : 'bg-white text-slate-600 border-slate-200 hover:border-emerald-400'
+              }" title="${this.esc(m.title)}">M${m.number} · ${this.esc(m.title.length > 28 ? m.title.slice(0, 26) + '…' : m.title)} (${m.questions_count})</button>
+            `).join('')}
+          </div>
+        </div>
+        <div class="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-sm">
+          <span class="text-emerald-900"><strong>${effective}</strong> preguntas, balanceadas por módulo y en orden aleatorio</span>
+          <span class="font-mono font-bold text-emerald-800">⏱ ${minutes} min</span>
+        </div>
+      </div>
+    `;
+  },
+
   updateExamTimerDisplay() {
     const timerEl = document.getElementById('exam-timer');
     if (!timerEl) return;
     const sec = AppState.exam.remainingSeconds;
-    const m = Math.floor(sec / 60).toString().padStart(2, '0');
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60).toString().padStart(2, '0');
     const s = (sec % 60).toString().padStart(2, '0');
-    timerEl.innerText = `${m}:${s}`;
+    timerEl.innerText = h > 0 ? `${h}:${m}:${s}` : `${m}:${s}`;
 
     if (sec <= 300) {
       timerEl.className = 'font-mono text-base font-black px-3 py-1 rounded bg-rose-100 text-rose-700 border border-rose-300 animate-pulse';
@@ -521,12 +738,15 @@ const UI = {
             <p class="text-sm text-slate-600">Analista IV (OPEC 236799) • Asistencia al Usuario</p>
           </div>
           
+          ${this.renderExamSetupOptions()}
+
           <div class="text-left bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs md:text-sm space-y-2 text-slate-700">
             <div class="font-bold text-slate-900 mb-1">Reglas Oficiales del Simulacro:</div>
             <p>• <strong>Metodología Juicio Situacional:</strong> Cada pregunta plantea un caso laboral realista con únicamente 3 opciones de respuesta (A, B y C).</p>
-            <p>• <strong>Tiempo límite:</strong> 30 minutos para responder la totalidad de las preguntas.</p>
+            <p>• <strong>Tiempo límite:</strong> ${Math.round(AppState.examConfig.secondsPerQuestion / 60)} minutos por pregunta (la prueba real dura 4 horas desde la orden de inicio).</p>
             <p>• <strong>Regla Eliminatoria:</strong> La Prueba Funcional tiene un peso del 65% y exige un puntaje mínimo aprobatorio de <strong>70.00 / 100</strong>. Obtener menos significa la eliminación inmediata del concurso.</p>
-            <p>• <strong>Hojas de Respuestas:</strong> Podrás marcar preguntas para revisión y navegar libremente entre ellas antes de finalizar.</p>
+            <p>• <strong>Hoja de Respuestas:</strong> Podrás marcar preguntas para revisión y navegar libremente entre ellas antes de finalizar.</p>
+            <p>• <strong>Teclado:</strong> <kbd class="px-1 border rounded bg-white">A</kbd> <kbd class="px-1 border rounded bg-white">B</kbd> <kbd class="px-1 border rounded bg-white">C</kbd> responden, <kbd class="px-1 border rounded bg-white">←</kbd> <kbd class="px-1 border rounded bg-white">→</kbd> navegan, <kbd class="px-1 border rounded bg-white">M</kbd> marca para revisión.</p>
           </div>
 
           <button onclick="UI.startExam()" class="w-full py-3.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl transition shadow-lg shadow-rose-600/30 text-base">
@@ -751,6 +971,7 @@ const UI = {
     }
 
     const passed = r.passed_functional;
+    this._onlyWrong = false;
 
     container.innerHTML = `
       <div class="space-y-6 animate-fade-in">
@@ -821,13 +1042,18 @@ const UI = {
         <div class="space-y-4">
           <div class="flex items-center justify-between">
             <h2 class="text-lg font-bold text-slate-900">Revisión Pedagógica y Normativa</h2>
-            <button onclick="UI.startExam()" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl transition shadow">
-              Intentar Nuevo Simulacro
-            </button>
+            <div class="flex gap-2">
+              <button onclick="UI.reviewWrongOnly()" class="px-4 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 font-bold text-xs rounded-xl transition">
+                Ver solo mis errores
+              </button>
+              <button onclick="UI.repeatLastExam()" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl transition shadow">
+                Intentar Nuevo Simulacro
+              </button>
+            </div>
           </div>
 
           ${r.questions_review.map((item, idx) => `
-            <div class="bg-white rounded-2xl p-6 shadow-sm border ${item.is_correct ? 'border-emerald-200' : 'border-rose-200'}">
+            <div data-review-correct="${item.is_correct}" class="bg-white rounded-2xl p-6 shadow-sm border ${item.is_correct ? 'border-emerald-200' : 'border-rose-200'}">
               <div class="flex items-center justify-between mb-3">
                 <span class="text-xs font-bold px-2.5 py-0.5 rounded ${item.is_correct ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
                   ${item.is_correct ? '✓ Correcta' : '✕ Incorrecta'} • Pregunta ${idx + 1}
@@ -880,13 +1106,21 @@ const UI = {
     `;
   },
 
+  reviewWrongOnly() {
+    this._onlyWrong = !this._onlyWrong;
+    document.querySelectorAll('[data-review-correct="true"]').forEach(el => {
+      el.classList.toggle('hidden', this._onlyWrong);
+    });
+  },
+
   // -------------------------------------------------------------
   // 6. FLASHCARDS INTERACTIVAS (MEMORIZACIÓN DE PLAZOS)
   // -------------------------------------------------------------
   async renderFlashcards(container) {
     if (AppState.flashcards.items.length === 0) {
       try {
-        AppState.flashcards.items = await API.getFlashcards();
+        const sel = AppState.flashcards.selectedModuleId;
+        AppState.flashcards.items = await API.getFlashcards(sel === 'all' ? null : sel);
         AppState.flashcards.currentIndex = 0;
         AppState.flashcards.isFlipped = false;
       } catch (err) {
@@ -904,13 +1138,21 @@ const UI = {
           <p class="text-xs md:text-sm text-slate-500">Memoriza términos perentorios, plazos de Ley 1755, suspensiones de RUT y competencias</p>
         </div>
 
+        <div class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center justify-between">
+          <select onchange="UI.filterFlashcards(this.value)" class="flex-1 px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs md:text-sm font-semibold text-slate-700">
+            <option value="all" ${fc.selectedModuleId === 'all' ? 'selected' : ''}>Todos los módulos</option>
+            ${AppState.modules.map(m => `<option value="${m.id}" ${String(fc.selectedModuleId) === String(m.id) ? 'selected' : ''}>Módulo ${m.number} · ${this.esc(m.title)} (${m.flashcards_count})</option>`).join('')}
+          </select>
+          <button onclick="UI.shuffleFlashcards()" class="px-4 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50">🔀 Barajar</button>
+        </div>
+
         ${!currentCard ? `
           <div class="text-center p-8 bg-white rounded-2xl border border-slate-200">
             <p class="text-slate-500 text-sm">No hay flashcards disponibles.</p>
           </div>
         ` : `
           <!-- Tarjeta con Efecto Flip -->
-          <div class="perspective-1000 w-full h-80 cursor-pointer" onclick="UI.toggleFlipFlashcard()">
+          <div class="perspective-1000 w-full h-96 cursor-pointer" onclick="UI.toggleFlipFlashcard()">
             <div id="flashcard-inner" class="relative w-full h-full transition-card transform-style-3d ${fc.isFlipped ? 'rotate-y-180' : ''}">
               
               <!-- Lado Frontal (Término / Pregunta) -->
@@ -934,8 +1176,8 @@ const UI = {
                   <span>Respuesta Oficial</span>
                   <span>${fc.currentIndex + 1} de ${fc.items.length}</span>
                 </div>
-                <div class="my-auto space-y-3">
-                  <p class="text-base md:text-lg font-medium text-slate-100 leading-relaxed">${currentCard.definition}</p>
+                <div class="my-auto space-y-3 overflow-y-auto">
+                  <p class="text-sm md:text-base font-medium text-slate-100 leading-relaxed">${currentCard.definition}</p>
                   ${currentCard.legal_norm ? `
                     <div class="inline-block px-3 py-1 bg-emerald-500/20 text-emerald-300 rounded-lg text-xs font-mono font-semibold border border-emerald-500/30">
                       ⚖️ ${currentCard.legal_norm}
@@ -967,6 +1209,26 @@ const UI = {
     `;
   },
 
+  filterFlashcards(moduleId) {
+    const fc = AppState.flashcards;
+    fc.selectedModuleId = moduleId;
+    fc.items = [];
+    fc.currentIndex = 0;
+    fc.isFlipped = false;
+    this.render();
+  },
+
+  shuffleFlashcards() {
+    const fc = AppState.flashcards;
+    for (let i = fc.items.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [fc.items[i], fc.items[j]] = [fc.items[j], fc.items[i]];
+    }
+    fc.currentIndex = 0;
+    fc.isFlipped = false;
+    this.render();
+  },
+
   toggleFlipFlashcard() {
     AppState.flashcards.isFlipped = !AppState.flashcards.isFlipped;
     const cardEl = document.getElementById('flashcard-inner');
@@ -995,6 +1257,141 @@ const UI = {
       fc.isFlipped = false;
       this.render();
     }
+  },
+
+  // -------------------------------------------------------------
+  // 6b. RUTA DE ESTUDIO POR EJES TEMÁTICOS OPEC
+  // -------------------------------------------------------------
+  getStudiedEjes() {
+    try { return new Set(JSON.parse(localStorage.getItem('prepdian.ejesEstudiados') || '[]')); }
+    catch (e) { return new Set(); }
+  },
+
+  toggleEjeStudied(num) {
+    const set = this.getStudiedEjes();
+    if (set.has(num)) set.delete(num); else set.add(num);
+    try { localStorage.setItem('prepdian.ejesEstudiados', JSON.stringify([...set])); } catch (e) { /* sin almacenamiento */ }
+    this.render();
+  },
+
+  countdownText(iso) {
+    const diff = new Date(iso).getTime() - Date.now();
+    if (isNaN(diff)) return '';
+    if (diff <= 0) return '¡Hoy es la prueba! Mucha suerte 🍀';
+    const h = Math.floor(diff / 3600000);
+    const d = Math.floor(h / 24);
+    const rh = h % 24;
+    const m = Math.floor((diff % 3600000) / 60000);
+    return d > 0 ? `Faltan ${d} d ${rh} h ${m} min` : `Faltan ${rh} h ${m} min`;
+  },
+
+  async renderEjes(container) {
+    if (!AppState.ejes) {
+      container.innerHTML = `<div class="h-40 bg-slate-200 rounded-2xl animate-pulse"></div>`;
+      try {
+        AppState.ejes = await API.getEjes();
+      } catch (err) {
+        container.innerHTML = `<p class="text-rose-700 text-sm">No se pudieron cargar los ejes: ${this.esc(err.message)}</p>`;
+        return;
+      }
+      if (AppState.activeView !== 'ejes') return;
+    }
+    const data = AppState.ejes;
+    const studied = this.getStudiedEjes();
+    const total = data.ejes.length;
+    const done = data.ejes.filter(e => studied.has(e.numero)).length;
+    const pct = Math.round((done / total) * 100);
+    const grupos = [...new Set(data.ejes.map(e => e.grupo))];
+    const groupStyle = {
+      'Propia del empleo': 'bg-rose-100 text-rose-800 border-rose-200',
+      'Básica / común': 'bg-emerald-100 text-emerald-800 border-emerald-200',
+      'Pruebas Comportamental e Integridad': 'bg-sky-100 text-sky-800 border-sky-200'
+    };
+
+    container.innerHTML = `
+      <div class="space-y-6 animate-fade-in">
+        <!-- Encabezado + cuenta regresiva -->
+        <div class="bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 text-white rounded-2xl p-6 md:p-8 shadow-xl border border-emerald-800/40">
+          <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <div class="text-xs font-semibold uppercase tracking-wider text-emerald-300 mb-2">Ficha CC-AU-2010 · OPEC 236799</div>
+              <h1 class="text-2xl md:text-3xl font-extrabold mb-1">Ruta de estudio por Ejes Temáticos</h1>
+              <p class="text-slate-300 text-sm max-w-2xl">Los 14 ejes que la CNSC evalúa para tu empleo, cada uno con lo que no puede faltar y sus módulos de estudio, práctica y flashcards.</p>
+            </div>
+            <div class="bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-center min-w-[220px]">
+              <div class="text-[11px] uppercase tracking-wider text-slate-300">Prueba escrita · dom. 8 nov 2026</div>
+              <div id="ejes-countdown" class="text-lg font-black text-amber-300">${this.countdownText(data.fecha_prueba)}</div>
+            </div>
+          </div>
+          <div class="mt-5">
+            <div class="flex justify-between text-xs text-slate-300 mb-1">
+              <span>Tu repaso: ${done} de ${total} ejes marcados como estudiados</span><span>${pct}%</span>
+            </div>
+            <div class="w-full h-2.5 bg-white/10 rounded-full overflow-hidden">
+              <div class="h-2.5 bg-gradient-to-r from-emerald-400 to-teal-300 rounded-full transition-all" style="width:${pct}%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Logística del día -->
+        <details class="bg-white rounded-2xl p-5 shadow-sm border border-amber-200 group" ${done === 0 ? 'open' : ''}>
+          <summary class="cursor-pointer font-bold text-slate-900 text-sm flex items-center justify-between">
+            <span>📋 Lo que dice la Guía de Orientación (léelo hoy)</span>
+            <span class="text-xs text-slate-400 group-open:hidden">ver</span>
+          </summary>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 text-xs md:text-sm text-slate-700">
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><strong>Horario:</strong> apertura de puertas 7:15 a. m., inicio 8:00 a. m., <strong>cierre de puertas 8:30 a. m.</strong> (quien llegue después queda ausente). Duración: <strong>4 horas</strong>.</div>
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><strong>Hoja de respuestas:</strong> solo se califica lo marcado en la hoja, con <strong>lápiz de mina negra N.º 2</strong>; lo escrito en el cuadernillo no cuenta.</div>
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><strong>Corte normativo:</strong> ${this.esc(data.corte_normativo)}. La Ley 2586 de 2026 (régimen sancionatorio aduanero) queda por fuera.</div>
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><strong>Funcional (65 %):</strong> juicio situacional, 3 opciones (A, B, C), una correcta. Eliminatoria: mínimo <strong>70/100</strong>.</div>
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><strong>Comportamental (15 %) e Integridad (10 %):</strong> escala Likert de 4 opciones con 2 subescalas de control. Responde con consistencia, sin marcar extremos por reflejo.</div>
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><strong>Citación:</strong> confirma en SIMO tu ciudad, sitio y salón. Lleva tu documento de identidad original.</div>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-3">Fuente: Guía de Orientación al Aspirante DIAN 2676 (CNSC – Areandina). Confirma siempre los datos en tu citación de SIMO.</p>
+        </details>
+
+        ${grupos.map(g => `
+          <div>
+            <h2 class="text-sm font-black uppercase tracking-wider text-slate-500 mb-3">${this.esc(g)}</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              ${data.ejes.filter(e => e.grupo === g).map(e => {
+                const isDone = studied.has(e.numero);
+                const modIds = JSON.stringify(e.modulos.map(m => m.id));
+                return `
+                <div class="bg-white rounded-2xl p-5 shadow-sm border ${isDone ? 'border-emerald-400 ring-1 ring-emerald-200' : 'border-slate-200'} flex flex-col">
+                  <div class="flex items-start justify-between gap-3 mb-3">
+                    <div class="flex items-start gap-3">
+                      <span class="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center font-black text-sm border ${groupStyle[g] || 'bg-slate-100 text-slate-700 border-slate-200'}">${e.numero}</span>
+                      <h3 class="font-bold text-slate-900 text-sm md:text-base leading-snug">${this.esc(e.titulo)}</h3>
+                    </div>
+                    <label class="shrink-0 flex items-center gap-1.5 text-[11px] font-semibold cursor-pointer select-none ${isDone ? 'text-emerald-700' : 'text-slate-400'}">
+                      <input type="checkbox" ${isDone ? 'checked' : ''} onchange="UI.toggleEjeStudied(${e.numero})" class="w-4 h-4 accent-emerald-600">
+                      Estudiado
+                    </label>
+                  </div>
+                  <ul class="space-y-1.5 text-xs md:text-sm text-slate-700 mb-4 flex-1">
+                    ${e.claves.map(c => `<li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span><span>${this.esc(c)}</span></li>`).join('')}
+                  </ul>
+                  <div class="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-100">
+                    ${e.modulos.map(m => `
+                      <button onclick="UI.openModule(${m.id})" class="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-[11px] font-bold border border-emerald-200">📖 M${m.number} · ${this.esc(m.title.length > 30 ? m.title.slice(0, 28) + '…' : m.title)}</button>
+                    `).join('')}
+                    <button onclick='UI.practiceEje(${modIds}, ${JSON.stringify('Práctica · Eje ' + e.numero).replace(/'/g, '&#39;')})' class="ml-auto px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold">✍️ Practicar (${e.questions_count})</button>
+                  </div>
+                </div>`;
+              }).join('')}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+
+    clearInterval(this._countdownTimer);
+    this._countdownTimer = setInterval(() => {
+      const el = document.getElementById('ejes-countdown');
+      if (!el) { clearInterval(this._countdownTimer); return; }
+      el.textContent = this.countdownText(data.fecha_prueba);
+    }, 30000);
   },
 
   // -------------------------------------------------------------

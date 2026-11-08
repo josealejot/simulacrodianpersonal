@@ -2,7 +2,11 @@ import os
 
 class Settings:
     PROJECT_NAME: str = "PrepDIAN 2676 - Analista IV (OPEC 236799)"
-    PROJECT_VERSION: str = "1.0.0"
+    PROJECT_VERSION: str = "2.0.0"
+
+    # Datos de la prueba escrita (Guía de Orientación al Aspirante DIAN 2676)
+    FECHA_PRUEBA_ISO: str = "2026-11-08T08:00:00-05:00"
+    CORTE_NORMATIVO: str = "Solo normas vigentes expedidas antes del 19 de junio de 2026"
     
     # Datos oficiales de la convocatoria
     PROCESO: str = "Selección DIAN 2676 - Ingreso"
@@ -26,7 +30,8 @@ class Settings:
     
     # SQLite DB Path
     BASE_DIR: str = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    DB_PATH: str = os.path.join(BASE_DIR, "prepdian.db")
+    # PREPDIAN_DB_PATH permite usar otra BD (ej. pruebas automatizadas) sin tocar la real
+    DB_PATH: str = os.environ.get("PREPDIAN_DB_PATH") or os.path.join(BASE_DIR, "prepdian.db")
     DATABASE_URL: str = f"sqlite:///{DB_PATH}"
 
 settings = Settings()

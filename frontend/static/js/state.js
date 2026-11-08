@@ -21,6 +21,17 @@ const AppState = {
     lastResult: null
   },
 
+  // Configuración del simulacro (elegida en la pantalla previa)
+  examConfig: {
+    count: 40,            // número de preguntas (0 = todas)
+    secondsPerQuestion: 120,
+    moduleIds: [],        // vacío = todos los módulos
+    label: 'Simulacro general'
+  },
+
+  // Ejes temáticos OPEC (cache de /api/ejes)
+  ejes: null,
+
   // Estado de Flashcards
   flashcards: {
     items: [],

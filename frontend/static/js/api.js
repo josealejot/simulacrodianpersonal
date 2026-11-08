@@ -26,8 +26,19 @@ const API = {
     return await res.json();
   },
 
-  async getExamQuestions() {
-    const res = await fetch('/api/exam/questions');
+  async getEjes() {
+    const res = await fetch('/api/ejes');
+    if (!res.ok) throw new Error('Error al cargar ejes temáticos');
+    return await res.json();
+  },
+
+  async getExamQuestions(opts = {}) {
+    const params = new URLSearchParams();
+    if (opts.limit) params.set('limit', opts.limit);
+    if (opts.moduleIds && opts.moduleIds.length) params.set('module_ids', opts.moduleIds.join(','));
+    if (opts.shuffle) params.set('shuffle', 'true');
+    const qs = params.toString();
+    const res = await fetch('/api/exam/questions' + (qs ? `?${qs}` : ''));
     if (!res.ok) throw new Error('Error al obtener preguntas de simulacro');
     return await res.json();
   },

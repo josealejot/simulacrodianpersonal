@@ -83,6 +83,13 @@ class ExamAttempt(Base):
     passed_functional = Column(Boolean, nullable=False)
     details_json = Column(Text, nullable=True) # Full answers, question states and breakdown
 
+class AppMeta(Base):
+    """Pares clave/valor de control interno (ej. versión del contenido sembrado)."""
+    __tablename__ = "app_meta"
+
+    key = Column(String(100), primary_key=True)
+    value = Column(String(500), nullable=True)
+
 class DocumentResource(Base):
     __tablename__ = "document_resources"
 

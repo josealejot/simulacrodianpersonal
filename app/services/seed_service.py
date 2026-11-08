@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
-from app.models.models import Module, Topic, Question, Option, Flashcard, DocumentResource
+from app.models.models import Module, Topic, Question, Option, Flashcard, DocumentResource, AppMeta
+from app.services.content_opec import CONTENT_VERSION, seed_extended_content
 
 class SeedService:
     @staticmethod
@@ -75,7 +76,28 @@ class SeedService:
         db.commit()
 
     @staticmethod
+    def get_content_version(db: Session):
+        meta = db.query(AppMeta).filter(AppMeta.key == "content_version").first()
+        return meta.value if meta else None
+
+    @staticmethod
+    def set_content_version(db: Session, version: str):
+        meta = db.query(AppMeta).filter(AppMeta.key == "content_version").first()
+        if meta:
+            meta.value = version
+        else:
+            db.add(AppMeta(key="content_version", value=version))
+        db.commit()
+
+    @staticmethod
     def seed_database(db: Session, force_reset: bool = False):
+        # Si la BD tiene contenido de una versión anterior, se re-siembra SOLO el
+        # contenido de estudio. El historial (exam_attempts) nunca se borra.
+        if (not force_reset
+                and db.query(Module).count() > 0
+                and SeedService.get_content_version(db) != CONTENT_VERSION):
+            force_reset = True
+
         SeedService.seed_documents(db, force_reset=force_reset)
 
         if not force_reset and db.query(Module).count() > 0:
@@ -510,7 +532,7 @@ La función administrativa está al servicio de los intereses generales y se des
             {
                 "module": m2,
                 "category": "Funcional",
-                "case_study": "Un usuario fue notificado personalmente el día lunes 3 de octubre de una liquidación oficial mediante la cual se le impone una sanción formal. El usuario desea impugnar la decisión directamente ante la entidad administrativa que expidió el acto para que este sea reconsiderado.",
+                "case_study": "Un ciudadano fue notificado personalmente el lunes 3 de octubre de un acto administrativo particular y definitivo, expedido por un jefe de división de la Seccional dentro de una actuación administrativa general regida por el CPACA (no se trata de una liquidación oficial ni de una sanción tributaria, que tienen recurso propio en el Estatuto Tributario). El ciudadano desea impugnarlo ante el mismo funcionario que lo expidió.",
                 "question_text": "Conforme a las disposiciones del CPACA (Ley 1437 de 2011), ¿cuál recurso debe interponer y dentro de qué plazo legal?",
                 "legal_reference": "Ley 1437 de 2011 Art. 76",
                 "explanation": "La opción A es la correcta: ante el mismo funcionario que profirió la decisión procede el recurso de reposición, y el plazo perentorio para interponerlo por escrito es de diez (10) días hábiles contados a partir del día siguiente a la notificación personal. La opción B es incorrecta porque la apelación se surte ante el superior y el plazo legal no es de 5 días. La opción C es incorrecta porque el plazo en sede administrativa general no es de un mes.",
@@ -713,3 +735,7 @@ La función administrativa está al servicio de los intereses generales y se des
             db.add(fc)
 
         db.commit()
+
+        # Contenido ampliado según los 14 ejes temáticos de la ficha CC-AU-2010
+        seed_extended_content(db)
+        SeedService.set_content_version(db, CONTENT_VERSION)
